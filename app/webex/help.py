@@ -26,7 +26,8 @@ CUCM_HELP = """
 CUCM / Voice Commands
 
 /cucm phone <SEP device name> - Check phone configuration and registration
-/cucm extension <ext> - Lookup extension info
+/cucm extension <ext> - Lookup existing extension info
+/cucm free-extension <site> - Find available extension/DID
 /cucm user <userid> - Lookup CUCM end user info
 /cucm gateway <site> - Check voice gateway status
 /cucm trunk <name> - Check SIP trunk status

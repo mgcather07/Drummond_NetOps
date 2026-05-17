@@ -2,6 +2,7 @@ from app.webex.help import get_help
 from app.network.ping import ping_host
 from app.network.show_version import show_version
 from app.cucm.phones import get_phone
+from app.cucm.extensions import get_free_extension
 
 
 def handle_command(message_text: str) -> str:
@@ -45,6 +46,9 @@ def handle_command(message_text: str) -> str:
 
     if command_lower.startswith("/cucm phone"):
         return get_phone(command)
+
+    if command_lower.startswith("/cucm free-extension"):
+        return get_free_extension(command)
 
     # -----------------------------
     # UNKNOWN COMMAND
