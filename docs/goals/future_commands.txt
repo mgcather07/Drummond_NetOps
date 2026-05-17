@@ -1,0 +1,45 @@
+==============================
+DRUMMOND NETOPS BOT ROADMAP
+==============================
+
+========== NETWORK ==========
+[ ] /switch mac-search <mac>
+[ ] /switch interface <hostname> <interface>
+[ ] /switch poe <hostname>
+[ ] /arp lookup <ip>
+[ ] /dns lookup <hostname>
+[ ] /bgp summary <router>
+
+========== CUCM ==========
+[ ] /cucm route-plan <pattern>
+[ ] /cucm did-search <number>
+[ ] /cucm huntpilot <name>
+[ ] /cucm devicepool <name>
+[ ] /cucm phone reset <SEP>
+[ ] /cucm phone restart <SEP>
+[ ] /cucm sip-trunk status
+[ ] /cucm extension owner <ext>
+
+========== PALO ==========
+[ ] /palo session-search <ip>
+[ ] /palo commit push
+[ ] /palo blocked-threats
+[ ] /palo interface counters
+
+========== VSPHERE ==========
+[ ] /vsphere vm reboot <vm>
+[ ] /vsphere snapshot delete <vm>
+[ ] /vsphere datastore alerts
+[ ] /vsphere vmtools outdated
+
+========== REPORTS ==========
+[ ] /report cucm licenses
+[ ] /report firmware compliance
+[ ] /report failed phones
+[ ] /report switch inventory
+
+========== ADMIN ==========
+[ ] /backup config
+[ ] /reload bot
+[ ] /audit logs
+[ ] /bot statistics

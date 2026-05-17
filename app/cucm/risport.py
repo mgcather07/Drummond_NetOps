@@ -5,6 +5,7 @@ from zeep.transports import Transport
 from zeep.helpers import serialize_object
 import os
 import requests
+from app.data.model_lookup import MODEL_LOOKUP
 
 load_dotenv()
 
@@ -13,16 +14,6 @@ CUCM_USERNAME = os.getenv("CUCM_USERNAME")
 CUCM_PASSWORD = os.getenv("CUCM_PASSWORD")
 
 requests.packages.urllib3.disable_warnings()
-
-MODEL_LOOKUP = {
-    30016: "Cisco 7941",
-    30018: "Cisco 7961",
-    36217: "Cisco 8841",
-    683: "Cisco 8841",
-    684: "Cisco 8851",
-    685: "Cisco 8861",
-}
-
 
 def get_phone_status(phone_name: str) -> dict:
     """
@@ -90,7 +81,10 @@ def get_phone_status(phone_name: str) -> dict:
                     ip_address = "N/A"
 
                     model_id = device.get("Model", "N/A")
-                    model_name = MODEL_LOOKUP.get(model_id, str(model_id))
+                    model_name = MODEL_LOOKUP.get(
+                        model_id,
+                        f"Unknown Model ({model_id})"
+                    )
 
                     ip_entries = device.get("IPAddress", {}).get("item", [])
                     if not isinstance(ip_entries, list):
