@@ -1,5 +1,5 @@
 AUTHORIZED_USERS = {
-    "michael.cather@drummondco.com": {
+    "mcather@drummondco.com": {
         "name": "Michael Cather",
         "role": "master",
     },

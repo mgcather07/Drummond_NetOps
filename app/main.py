@@ -60,6 +60,14 @@ async def webhook(request: Request):
 
             return {"status": "unauthorized"}
 
+        incoming_text = message.text.strip().lower()
+
+        if incoming_text in ["/cucm health", "/health cucm"]:
+            webex_api.messages.create(
+                roomId=message.roomId,
+                text="⏳ CUCM health check started. DB replication can take 30–60 seconds..."
+            )
+
         reply = handle_command(
             message_text=message.text,
             sender_email=sender_email

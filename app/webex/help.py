@@ -16,6 +16,9 @@ Network Commands
 CUCM_HELP = """
 CUCM / Voice Commands
 
+/cucm health
+Show CUCM health summary including AXL status, route plan access, and SIP trunk registration
+
 /cucm phone <MAC Address>
 Check phone configuration, lines, registration status, IP address, firmware, and active CUCM node
 

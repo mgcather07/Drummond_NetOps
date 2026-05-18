@@ -7,6 +7,7 @@ from app.cucm.trunks import get_sip_trunk
 from app.cucm.route_plan_lookup import get_route_plan
 from app.cucm.dial_plan import get_dial_plan_match
 from app.cucm.call_flow import get_call_flow
+from app.cucm.health import get_cucm_health
 
 
 def handle_command(message_text: str, sender_email: str) -> str:
@@ -65,6 +66,9 @@ def handle_command(message_text: str, sender_email: str) -> str:
 
     if command_lower.startswith("/cucm route"):
         return get_dial_plan_match(command)
+
+    if command_lower in ["/cucm health", "/health cucm"]:
+        return get_cucm_health(command)
 
     # -----------------------------
     # UNKNOWN COMMAND

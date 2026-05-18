@@ -10,28 +10,32 @@ DRUMMOND NETOPS BOT ROADMAP
 [ ] /dns lookup <hostname>
 [ ] /bgp summary <router>
 
-========== CUCM ==========
+========== CUCM Bot Roadmap ==========
+
+--- Call Routing / Dial Plan ---
 [ X ] /cucm route-plan <pattern>
 [ X ] /cucm did-search <number>
+[ X ] /cucm call flow <ext>
+[ ] /cucm trunk <alias>
+[ X ] /cucm sip-trunk status
 [ ] /cucm huntpilot <name>
-[ ] /cucm devicepool <name>
+
+--- Phones / Devices ---
+[ ] /cucm phone <device>
 [ ] /cucm phone reset <SEP>
 [ ] /cucm phone restart <SEP>
-[ X ] /cucm sip-trunk status
-[ ] /cucm extension owner <ext>
-[ ] /cucm call flow <ext>
+[ ] /cucm unregistered
+[ ] /cucm devicepool <name>
 
-/cucm phone <device>
-/cucm extension <ext>
-/cucm free-extension <site>
-/cucm trunk <alias>
-/cucm route-plan <pattern>
-/cucm did-search <number>
-/cucm unregistered
-/cucm services
-/cucm dbreplication
-/cucm devicepool <name>
-/cucm user <userid>
+--- Extensions / Users ---
+[ ] /cucm extension <ext>
+[ ] /cucm extension owner <ext>
+[ ] /cucm free-extension <site>
+[ ] /cucm user <userid>
+
+--- Cluster Health ---
+[ ] /cucm services
+[ ] /cucm dbreplication
 
 ========== PALO ==========
 [ ] /palo session-search <ip>
