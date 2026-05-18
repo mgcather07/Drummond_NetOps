@@ -3,6 +3,7 @@ from app.network.ping import ping_host
 from app.network.show_version import show_version
 from app.cucm.phones import get_phone
 from app.cucm.extensions import get_free_extension
+from app.cucm.trunks import get_sip_trunk
 
 
 def handle_command(message_text: str) -> str:
@@ -49,6 +50,9 @@ def handle_command(message_text: str) -> str:
 
     if command_lower.startswith("/cucm free-extension"):
         return get_free_extension(command)
+
+    if command_lower.startswith("/cucm trunk"):
+        return get_sip_trunk(command)
 
     # -----------------------------
     # UNKNOWN COMMAND

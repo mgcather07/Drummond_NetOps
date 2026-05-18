@@ -1,5 +1,6 @@
 from app.cucm.did_utils import expand_did_ranges
 from app.cucm.route_plan import get_used_route_plan_patterns, is_did_used
+from app.data.sites import get_site
 
 
 def get_free_extension(command: str) -> str:
@@ -8,12 +9,18 @@ def get_free_extension(command: str) -> str:
     if len(parts) < 3:
         return "Usage: /cucm free-extension <site>"
 
-    site_name = parts[2].upper()
+    site = get_site(parts[2])
 
-    dids = expand_did_ranges(site_name)
+    if not site:
+        return f"❌ Unknown site: {parts[2]}\n\nTry /sites to view configured sites."
+
+    site_key = site["key"]
+    site_name = site["name"]
+
+    dids = expand_did_ranges(site_key)
 
     if not dids:
-        return f"❌ No DID blocks configured for site: {site_name}"
+        return f"❌ No DID blocks configured for site: {site_name} ({site_key})"
 
     try:
         used_patterns = get_used_route_plan_patterns()
@@ -36,7 +43,7 @@ Used Route Plan Patterns Checked: {len(used_patterns)}
 
         first_available = available_dids[0]
 
-        return f"""📞 Free Extension Lookup: {site_name}
+        return f"""📞 Free Extension Lookup: {site_name} ({site_key})
 
 Suggested Extension:
 {first_available[-4:]}
@@ -62,7 +69,7 @@ CUCM Route Plan Patterns Checked:
     except Exception as e:
         return f"""❌ Free extension lookup failed.
 
-Site: {site_name}
+Site: {site_name} ({site_key})
 
 Error Type: {type(e).__name__}
 Error:
