@@ -6,6 +6,7 @@ from app.cucm.free_extensions import get_free_extension
 from app.cucm.trunks import get_sip_trunk
 from app.cucm.route_plan_lookup import get_route_plan
 from app.cucm.dial_plan import get_dial_plan_match
+from app.cucm.call_flow import get_call_flow
 
 
 def handle_command(message_text: str) -> str:
@@ -55,6 +56,9 @@ def handle_command(message_text: str) -> str:
 
     if command_lower.startswith("/cucm trunk"):
         return get_sip_trunk(command)
+
+    if command_lower.startswith("/cucm call-flow"):
+        return get_call_flow(command)
 
     if command_lower.startswith("/cucm route-plan"):
         return get_route_plan(command)

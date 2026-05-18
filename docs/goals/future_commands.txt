@@ -19,6 +19,7 @@ DRUMMOND NETOPS BOT ROADMAP
 [ ] /cucm phone restart <SEP>
 [ X ] /cucm sip-trunk status
 [ ] /cucm extension owner <ext>
+[ ] /cucm call flow <ext>
 
 /cucm phone <device>
 /cucm extension <ext>

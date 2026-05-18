@@ -239,3 +239,35 @@ Site Context: {site_input or "Global Route Plan"}
 
 Error Type: {type(e).__name__}
 Error: {str(e)}"""
+
+
+def extract_likely_route_from_text(dial_plan_result: str) -> dict:
+    lines = dial_plan_result.splitlines()
+
+    in_likely_section = False
+    pattern = None
+    partition = None
+
+    for line in lines:
+        clean = line.strip()
+
+        if clean.startswith("Likely Selected Route"):
+            in_likely_section = True
+            continue
+
+        if in_likely_section and clean.startswith("All Matches"):
+            break
+
+        if in_likely_section:
+            # Handles: 3. 9.1[2-9]XX[2-9]XXXXXX
+            if re.match(r"^\d+\.\s+", clean):
+                pattern = re.sub(r"^\d+\.\s+", "", clean).strip()
+
+            if clean.startswith("Partition:"):
+                partition = clean.replace("Partition:", "").strip()
+
+    return {
+        "pattern": pattern,
+        "partition": partition,
+        "found": bool(pattern and partition),
+    }
