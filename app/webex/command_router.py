@@ -9,7 +9,7 @@ from app.cucm.dial_plan import get_dial_plan_match
 from app.cucm.call_flow import get_call_flow
 
 
-def handle_command(message_text: str) -> str:
+def handle_command(message_text: str, sender_email: str) -> str:
 
     command = message_text.strip()
 

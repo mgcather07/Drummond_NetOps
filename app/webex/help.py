@@ -27,6 +27,9 @@ Find available extension/DID validated against the CUCM route plan
 
 /cucm route-plan <pattern>
 Search CUCM route plan objects including DNs, translation patterns, and route patterns
+
+/cucm call-flow <number> from <site>
+Analyze CUCM call routing flow including route patterns, partitions, outbound trunks, and digit manipulation
 """
 
 ADMIN_HELP = """
