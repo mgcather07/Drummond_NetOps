@@ -11,14 +11,26 @@ DRUMMOND NETOPS BOT ROADMAP
 [ ] /bgp summary <router>
 
 ========== CUCM ==========
-[ ] /cucm route-plan <pattern>
-[ ] /cucm did-search <number>
+[ X ] /cucm route-plan <pattern>
+[ X ] /cucm did-search <number>
 [ ] /cucm huntpilot <name>
 [ ] /cucm devicepool <name>
 [ ] /cucm phone reset <SEP>
 [ ] /cucm phone restart <SEP>
-[ ] /cucm sip-trunk status
+[ X ] /cucm sip-trunk status
 [ ] /cucm extension owner <ext>
+
+/cucm phone <device>
+/cucm extension <ext>
+/cucm free-extension <site>
+/cucm trunk <alias>
+/cucm route-plan <pattern>
+/cucm did-search <number>
+/cucm unregistered
+/cucm services
+/cucm dbreplication
+/cucm devicepool <name>
+/cucm user <userid>
 
 ========== PALO ==========
 [ ] /palo session-search <ip>

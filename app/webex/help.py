@@ -16,8 +16,17 @@ Network Commands
 CUCM_HELP = """
 CUCM / Voice Commands
 
-/cucm phone <MAC Address> - Check phone configuration and registration
-/cucm free-extension <site> - Find available extension/DID
+/cucm phone <MAC Address>
+Check phone configuration, lines, registration status, IP address, firmware, and active CUCM node
+
+/cucm trunk <site or alias>
+Check SIP trunk configuration, destinations, and live trunk status
+
+/cucm free-extension <site>
+Find available extension/DID validated against the CUCM route plan
+
+/cucm route-plan <pattern>
+Search CUCM route plan objects including DNs, translation patterns, and route patterns
 """
 
 ADMIN_HELP = """
