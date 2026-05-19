@@ -16,12 +16,12 @@ DRUMMOND NETOPS BOT ROADMAP
 [ X ] /cucm route-plan <pattern>
 [ X ] /cucm did-search <number>
 [ X ] /cucm call flow <ext>
-[ ] /cucm trunk <alias>
+[ X ] /cucm trunk <alias>
 [ X ] /cucm sip-trunk status
 [ ] /cucm huntpilot <name>
 
 --- Phones / Devices ---
-[ ] /cucm phone <device>
+[ X ] /cucm phone <device>
 [ ] /cucm phone reset <SEP>
 [ ] /cucm phone restart <SEP>
 [ ] /cucm unregistered

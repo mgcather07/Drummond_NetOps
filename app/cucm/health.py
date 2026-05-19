@@ -54,25 +54,19 @@ def get_cucm_health(command: str) -> str:
     # Database Replication Health
     #
 
-    dbreplication_details_text = ""
+    dbreplication_summary = ""
 
     try:
         dbreplication = get_dbreplication_status()
         dbreplication_status = dbreplication.get("status", "N/A")
-
-        dbreplication_detail_command = dbreplication.get("detail_command")
-        dbreplication_detail_output = dbreplication.get("detail_output", "")
-
-        if dbreplication_detail_command:
-            dbreplication_details_text = f"""
-
-        DB Replication Detail:
-        Command: {dbreplication_detail_command}
-
-        {dbreplication_detail_output[:1500]}"""
+        dbreplication_summary = dbreplication.get(
+            "summary",
+            f"Database Replication: {dbreplication_status}"
+        )
 
     except Exception as e:
         dbreplication_status = f"❌ Failed - {type(e).__name__}"
+        dbreplication_summary = f"Database Replication: {dbreplication_status}"
 
     #
     # SIP Trunk Health
@@ -160,7 +154,9 @@ def get_cucm_health(command: str) -> str:
 Overall Status: {overall}
 
 AXL Status: {axl_status}
-Database Replication: {dbreplication_status}{dbreplication_details_text}
+
+{dbreplication_summary}
+
 Route Plan Objects Checked: {route_plan_count}
 
 CUCM Node Health:

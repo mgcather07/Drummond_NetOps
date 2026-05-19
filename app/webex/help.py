@@ -19,6 +19,9 @@ CUCM / Voice Commands
 /cucm health
 Show CUCM health summary including AXL status, route plan access, and SIP trunk registration
 
+/cucm phones-eol - Show CUCM phone EOL summary
+/cucm phones-eol detail - Show detailed EOL/EOS phone catalog
+
 /cucm phone <MAC Address>
 Check phone configuration, lines, registration status, IP address, firmware, and active CUCM node
 

@@ -13,13 +13,6 @@ SQL_AUTH_MODE = os.getenv("SQL_AUTH_MODE", "sql").lower()
 
 def get_sql_connection():
 
-    print("\n========== SQL DEBUG ==========")
-    print(f"SERVER: {SQL_SERVER}")
-    print(f"DATABASE: {SQL_DATABASE}")
-    print(f"AUTH MODE: {SQL_AUTH_MODE}")
-    print(f"USERNAME: {SQL_USERNAME}")
-    print("================================\n")
-
     if SQL_AUTH_MODE == "windows":
 
         connection_string = f"""

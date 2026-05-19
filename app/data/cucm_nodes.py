@@ -1,38 +1,56 @@
 CUCM_NODES = [
     {
         "name": "Publisher",
+        "friendly_name": "LPUC Publisher",
         "site": "LPUC",
         "ip": "10.0.10.200",
-        "hostname": "twr02smcm01"
+        "hostname": "twr02smcm01",
+        "replication_state": "2",
+        "replication_server": "g_2_ccm15_0_1_12900_234",
     },
     {
         "name": "Subscriber",
+        "friendly_name": "LPUC Subscriber",
         "site": "LPUC",
         "ip": "10.10.200.200",
-        "hostname": "twr04smcm03"
+        "hostname": "twr04smcm03",
+        "replication_state": "4",
+        "replication_server": "g_4_ccm15_0_1_12900_234",
     },
     {
         "name": "Subscriber",
+        "friendly_name": "Jasper Subscriber",
         "site": "Jasper",
         "ip": "192.168.200.230",
-        "hostname": "js3cmsub01"
+        "hostname": "js3cmsub01",
+        "replication_state": "6",
+        "replication_server": "g_6_ccm15_0_1_12900_234",
     },
     {
         "name": "Subscriber",
+        "friendly_name": "Bogota Subscriber",
         "site": "Bogota",
         "ip": "192.168.170.234",
-        "hostname": "BOGVIPCM03"
+        "hostname": "BOGVIPCM03",
+        "replication_state": "7",
+        "replication_server": "g_7_ccm15_0_1_12900_234",
     },
     {
         "name": "Subscriber",
+        "friendly_name": "Laloma Subscriber",
         "site": "Laloma",
         "ip": "192.168.188.205",
-        "hostname": "lalvipcm03"
+        "hostname": "lalvipcm03",
+        "replication_state": "8",
+        "replication_server": "g_8_ccm15_0_1_12900_234",
     },
     {
         "name": "Subscriber",
+        "friendly_name": "Santa Marta Subscriber",
         "site": "Santa Marta",
         "ip": "192.168.197.230",
-        "hostname": "stmvipcm03"
-    }
+        "hostname": "stmvipcm03",
+        "replication_state": "9",
+        "replication_server": "g_9_ccm15_0_1_12900_234",
+    },
 ]
