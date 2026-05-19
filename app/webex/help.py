@@ -42,6 +42,25 @@ ADMIN_HELP = """
 Admin Commands
 
 /status - Check bot status
+
+Admin User Commands
+
+/admin users
+List authorized bot users grouped by role
+
+/admin add-user <email> <role> <name>
+Add a new authorized bot user
+Valid roles: master, admin, user
+
+/admin disable-user <email>
+Disable a bot user without deleting them
+
+/admin enable-user <email>
+Re-enable a disabled bot user
+
+/admin set-role <email> <role>
+Change a bot user's role
+Valid roles: master, admin, user
 """
 
 
