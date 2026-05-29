@@ -53,6 +53,18 @@ def handle_command(message_text: str, sender_email: str) -> str:
     # PENDING INTERACTIVE ACTIONS
     # Must run BEFORE RBAC so multi-step flows aren't interrupted.
     # -----------------------------------------------------------------------
+    from app.state.pending_actions import get_pending, clear_pending
+    pending = get_pending(sender_email)
+
+    # --- vSphere power confirmation ---
+    if pending and pending.get("type") == "vsphere_power":
+        clear_pending(sender_email)
+        if command_lower.strip() == "yes":
+            from app.vsphere.power import power_op
+            return power_op(pending["vm_name"], pending["action"])
+        return "Cancelled."
+
+    # --- phones-eol model selection ---
     pending_response = handle_phone_lifecycle_selection(
         command=command,
         sender_email=sender_email,
@@ -269,6 +281,79 @@ def handle_command(message_text: str, sender_email: str) -> str:
             return get_address_object(" ".join(parts[2:]))
 
         return f"❓ Unknown palo subcommand: `{sub}`\n\nTry `/help palo` for available commands."
+
+    # -----------------------------------------------------------------------
+    # VSPHERE COMMANDS
+    # -----------------------------------------------------------------------
+
+    if command_lower.startswith("/vsphere"):
+        parts = command.split()
+        sub = parts[1].lower() if len(parts) > 1 else ""
+
+        if sub == "vm":
+            if len(parts) < 3:
+                return "Usage: `/vsphere vm <vm-name>`"
+            from app.vsphere.vms import get_vm_status
+            return get_vm_status(parts[2])
+
+        if sub == "list":
+            from app.vsphere.vms import list_vms
+            return list_vms()
+
+        if sub == "hosts":
+            from app.vsphere.infra import get_hosts
+            return get_hosts()
+
+        if sub == "cluster":
+            from app.vsphere.infra import get_cluster
+            return get_cluster()
+
+        if sub == "datastores":
+            from app.vsphere.infra import get_datastores
+            return get_datastores()
+
+        if sub == "net":
+            if len(parts) < 3:
+                return "Usage: `/vsphere net <vm-name>`"
+            from app.vsphere.network import get_vm_network
+            return get_vm_network(parts[2])
+
+        if sub == "portgroup":
+            if len(parts) < 3:
+                return "Usage: `/vsphere portgroup <portgroup-name>`"
+            pg_name = " ".join(parts[2:])  # allow spaces in PG names
+            from app.vsphere.network import get_portgroup_vms
+            return get_portgroup_vms(pg_name)
+
+        if sub == "snapshots":
+            if len(parts) >= 3:
+                from app.vsphere.snapshots import get_vm_snapshots
+                return get_vm_snapshots(parts[2])
+            from app.vsphere.snapshots import get_all_snapshots
+            return get_all_snapshots()
+
+        if sub == "power":
+            if len(parts) < 4:
+                return "Usage: `/vsphere power <vm-name> <on|off|restart|force-off>`"
+            vm_name = parts[2]
+            action = parts[3].lower()
+            # Multi-step confirmation
+            import time
+            from app.state.pending_actions import set_pending
+            set_pending(sender_email, {
+                "type": "vsphere_power",
+                "vm_name": vm_name,
+                "action": action,
+            })
+            verb = {"on": "power on", "off": "gracefully shut down",
+                    "restart": "restart", "force-off": "FORCE OFF"}.get(action, action)
+            warn = " ⚠️ **This is a hard power cut with no guest shutdown.**" if action == "force-off" else ""
+            return (
+                f"⚡ Confirm: **{verb}** VM `{vm_name}`?{warn}\n\n"
+                "Reply `yes` to confirm or `no` to cancel."
+            )
+
+        return f"❓ Unknown vsphere subcommand: `{sub}`\n\nTry `/help vsphere` for available commands."
 
     # -----------------------------------------------------------------------
     # UNKNOWN COMMAND — clean catch-all

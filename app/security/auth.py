@@ -71,6 +71,19 @@ COMMAND_PERMISSIONS = {
     "/net stats": "network.read",
 
     # -----------------------------
+    # vSphere read-only commands
+    # -----------------------------
+    "/vsphere vm": "vsphere.read",
+    "/vsphere list": "vsphere.read",
+    "/vsphere hosts": "vsphere.read",
+    "/vsphere cluster": "vsphere.read",
+    "/vsphere datastores": "vsphere.read",
+    "/vsphere net": "vsphere.read",
+    "/vsphere portgroup": "vsphere.read",
+    "/vsphere snapshots": "vsphere.read",
+    "/vsphere power": "vsphere.write",
+
+    # -----------------------------
     # Palo Alto read-only commands
     # -----------------------------
     "/palo policy": "palo.read",
