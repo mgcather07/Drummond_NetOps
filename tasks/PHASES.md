@@ -1,8 +1,8 @@
 # Phases
 
 High-level phase-only roadmap for this project. Each phase has a
-**name**, a **scope paragraph** (2–4 sentences), and a status. The
-ordered task list for each phase lives in [`ROADMAP.md`](ROADMAP.md).
+**name**, a **scope paragraph**, and a status. The ordered task list
+for each phase lives in [`ROADMAP.md`](ROADMAP.md).
 
 ---
 
@@ -14,11 +14,13 @@ ordered task list for each phase lives in [`ROADMAP.md`](ROADMAP.md).
 
 ---
 
-## Phase 0 — Foundation (already shipped)
+## Phase 0 — Foundation
 
 **Status:** ✅ Shipped — 2026-05-27
 
-**Scope.** Get a working Webex bot that can receive messages, authenticate users, and execute core CUCM commands (phones, trunks, call flow, route plan, dial plan, health, phones-eol). Webhook handler, auth gate, and command router all wired end-to-end.
+**Scope.** Working Webex bot with auth gate, CUCM commands (phones,
+trunks, call flow, route plan, dial plan, health, phones-eol), and
+webhook handler end-to-end.
 
 ---
 
@@ -26,7 +28,11 @@ ordered task list for each phase lives in [`ROADMAP.md`](ROADMAP.md).
 
 **Status:** 🚧 Active
 
-**Scope.** Fix the four correctness issues identified in the wrangle audit before any feature work proceeds: wire the existing RBAC system into the command router, remove dead code that looks authoritative, kill always-on PII logging, and add Webex webhook signature validation. None of these require touching CUCM logic. Done when every authorized user is correctly gated by their role, the codebase has no misleading dead code, and the webhook endpoint validates Webex signatures.
+**Scope.** Fix four correctness issues before any feature work:
+wire the RBAC system into the command router, delete dead code,
+kill always-on PII logging, and add Webex webhook signature validation.
+Done when every user is correctly gated by role and the webhook
+validates signatures.
 
 ---
 
@@ -34,16 +40,57 @@ ordered task list for each phase lives in [`ROADMAP.md`](ROADMAP.md).
 
 **Status:** 📋 Queued
 
-**Scope.** Close the reliability gaps before the command surface grows: startup env validation, fix the webhook registration script, add a TTL to pending interactive state, cache the RISPort WSDL locally, and move blocking I/O off the async event loop. Done when the bot survives a process restart cleanly, gives clear errors for bad config, and doesn't block under concurrent requests.
+**Scope.** Close reliability gaps before the command surface grows:
+startup env validation, fix webhook registration script, PENDING_ACTIONS
+TTL, cache RISPort WSDL locally, and move blocking I/O off the async
+event loop. Done when the bot survives restarts cleanly and gives clear
+errors for bad config.
 
 ---
 
-## Phase 3 — Palo Alto & Feature Expansion
+## Phase 3 — Bot Cleanup & Quality
 
 **Status:** 📋 Queued
 
-**Scope.** Expand the bot beyond CUCM: add the first Palo Alto firewall commands (policy match, NAT lookup), improve Webex output with markdown formatting, and add more network commands (traceroute, show interface, show ip route). Done when at least one Palo Alto command returns accurate data from the live firewall and Webex messages use consistent markdown formatting across all handlers.
+**Scope.** Make the bot production-quality: overhaul the help system
+so it's complete and accurate, standardize error handling and response
+format across all handlers, replace all `print()` statements with
+structured logging, apply markdown formatting, and clean up command
+routing (aliases, normalization, dead paths). Done when every command
+has consistent formatting, comprehensive help text, and errors are
+logged — not printed — to stdout.
 
 ---
 
-*(Add phases as the project evolves. Use `/plan` to think through new phases; use `/task` to file tasks under existing phases.)*
+## Phase 4 — Palo Alto Integration
+
+**Status:** 📋 Queued
+
+**Scope.** Full PAN-OS XML API integration: policy match, NAT lookup,
+HA status, interface and zone info, address/rule search by IP, and
+route table lookup. Done when the team can answer any common firewall
+question from Webex without logging into the Palo Alto GUI.
+
+---
+
+## Phase 5 — Network Device Full Integration
+
+**Status:** 📋 Queued
+
+**Scope.** Expand SSH-based network device access beyond ping and
+show version: build a named device registry so users say `/net
+CORE-SW1 ...` instead of raw IPs, add ARP table, MAC address table,
+CDP/LLDP neighbors, VLAN/port membership, and interface error stats.
+Done when the team can diagnose most Layer 2/3 issues from Webex.
+
+---
+
+## Phase 6 — vSphere Integration
+
+**Status:** 📋 Queued
+
+**Scope.** pyVmomi-based vCenter integration: VM inventory and status,
+controlled power state operations (view + limited actions gated to
+master role), host and cluster health, datastore capacity, and snapshot
+age reporting. Done when the team can answer "what's the state of VM X"
+and get a datastore capacity summary without opening vSphere Client.
