@@ -59,6 +59,16 @@ COMMAND_PERMISSIONS = {
     "/network ping": "network.read",
     "/network show-version": "network.read",
     "/show version": "network.read",
+    "/show interface": "network.read",
+    "/show ip route": "network.read",
+    "/traceroute": "network.read",
+    "/net devices": "network.read",
+    "/net arp": "network.read",
+    "/net mac": "network.read",
+    "/net neighbors": "network.read",
+    "/net vlan": "network.read",
+    "/net port": "network.read",
+    "/net stats": "network.read",
 
     # -----------------------------
     # Palo Alto read-only commands
