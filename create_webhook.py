@@ -17,7 +17,7 @@ api = WebexTeamsAPI(access_token=BOT_TOKEN)
 # Create webhook
 webhook = api.webhooks.create(
     name="Drummond NetOps Webhook",
-    targetUrl="https://d094-45-22-149-30.ngrok-free.app/webhook",
+    targetUrl="https://2ef8-45-22-149-30.ngrok-free.app/webhook",
     resource="messages",
     event="created"
 )
