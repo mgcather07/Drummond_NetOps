@@ -136,6 +136,62 @@ def handle_command(message_text: str, sender_email: str) -> str:
         return get_cucm_health(command)
 
     # -----------------------------------------------------------------------
+    # PALO ALTO COMMANDS
+    # -----------------------------------------------------------------------
+
+    if command_lower.startswith("/palo"):
+        parts = command.split()
+        sub = parts[1].lower() if len(parts) > 1 else ""
+
+        if sub == "policy":
+            if len(parts) < 5:
+                return "Usage: `/palo policy <src> <dst> <port>`"
+            from app.palo.policy import get_policy_match
+            return get_policy_match(parts[2], parts[3], parts[4])
+
+        if sub == "nat":
+            if len(parts) < 3:
+                return "Usage: `/palo nat <ip>`"
+            from app.palo.policy import get_nat_match
+            return get_nat_match(parts[2])
+
+        if sub == "health":
+            from app.palo.health import get_system_health
+            return get_system_health()
+
+        if sub == "ha":
+            from app.palo.health import get_ha_state
+            return get_ha_state()
+
+        if sub == "interfaces":
+            from app.palo.interfaces import get_interfaces
+            return get_interfaces()
+
+        if sub == "zones":
+            from app.palo.interfaces import get_zones
+            return get_zones()
+
+        if sub == "route":
+            if len(parts) < 3:
+                return "Usage: `/palo route <ip>`"
+            from app.palo.interfaces import get_route
+            return get_route(parts[2])
+
+        if sub == "search":
+            if len(parts) < 3:
+                return "Usage: `/palo search <ip>`"
+            from app.palo.search import search_rules_by_ip
+            return search_rules_by_ip(parts[2])
+
+        if sub == "address":
+            if len(parts) < 3:
+                return "Usage: `/palo address <object-name>`"
+            from app.palo.search import get_address_object
+            return get_address_object(" ".join(parts[2:]))
+
+        return f"❓ Unknown palo subcommand: `{sub}`\n\nTry `/help palo` for available commands."
+
+    # -----------------------------------------------------------------------
     # UNKNOWN COMMAND — clean catch-all
     # -----------------------------------------------------------------------
     logger.info("Unknown command from %s: %r", sender_email, command)

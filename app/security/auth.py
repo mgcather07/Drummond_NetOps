@@ -11,6 +11,8 @@ ROLE_PERMISSIONS = {
         "cucm.read",
         "cucm.health",
         "network.read",
+        "palo.read",
+        "vsphere.read",
     ],
     "user": [
         "cucm.read",
@@ -57,6 +59,19 @@ COMMAND_PERMISSIONS = {
     "/network ping": "network.read",
     "/network show-version": "network.read",
     "/show version": "network.read",
+
+    # -----------------------------
+    # Palo Alto read-only commands
+    # -----------------------------
+    "/palo policy": "palo.read",
+    "/palo nat": "palo.read",
+    "/palo health": "palo.read",
+    "/palo ha": "palo.read",
+    "/palo interfaces": "palo.read",
+    "/palo zones": "palo.read",
+    "/palo route": "palo.read",
+    "/palo search": "palo.read",
+    "/palo address": "palo.read",
 }
 
 

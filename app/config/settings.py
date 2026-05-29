@@ -9,6 +9,15 @@ BOT_NAME = os.getenv("BOT_NAME", "Drummond NetOps Bot")
 BOT_VERSION = os.getenv("BOT_VERSION", "0.1.0")
 BOT_ENVIRONMENT = os.getenv("BOT_ENVIRONMENT", "Development")
 
+# Palo Alto — optional; commands fail gracefully if not set
+PALO_HOST = os.getenv("PALO_HOST")
+PALO_API_KEY = os.getenv("PALO_API_KEY")
+
+# vSphere — optional; commands fail gracefully if not set
+VCENTER_HOST = os.getenv("VCENTER_HOST")
+VCENTER_USERNAME = os.getenv("VCENTER_USERNAME")
+VCENTER_PASSWORD = os.getenv("VCENTER_PASSWORD")
+
 
 # ---------------------------------------------------------------------------
 # Startup env validation
