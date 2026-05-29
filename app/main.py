@@ -1,23 +1,40 @@
 # app/main.py
-from fastapi import FastAPI, Request
-from webexteamssdk import WebexTeamsAPI
-from dotenv import load_dotenv
+import hashlib
+import hmac
 import os
 
-from app.webex.command_router import handle_command
-from app.security.auth import is_authorized, unauthorized_message
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request, Response
+from webexteamssdk import WebexTeamsAPI
 
-app = FastAPI()
+from app.security.auth import is_authorized, unauthorized_message
+from app.webex.command_router import handle_command
 
 load_dotenv()
 
+app = FastAPI()
+
 BOT_TOKEN = os.getenv("WEBEX_BOT_TOKEN")
 ADMIN_ROOM_ID = os.getenv("BOT_ADMIN_ROOM_ID")
+WEBHOOK_SECRET = os.getenv("WEBEX_WEBHOOK_SECRET")
 
 if not BOT_TOKEN:
     raise ValueError("WEBEX_BOT_TOKEN is missing from .env")
 
 webex_api = WebexTeamsAPI(access_token=BOT_TOKEN)
+
+
+def _verify_signature(raw_body: bytes, header_sig: str) -> bool:
+    """Return True if the X-Spark-Signature header matches the HMAC-SHA1 of the body."""
+    if not WEBHOOK_SECRET:
+        # Secret not configured — skip validation (allows gradual rollout)
+        return True
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode("utf-8"),
+        raw_body,
+        hashlib.sha1,
+    ).hexdigest()
+    return hmac.compare_digest(expected, header_sig or "")
 
 
 @app.get("/")
@@ -27,9 +44,16 @@ def root():
 
 @app.post("/webhook")
 async def webhook(request: Request):
-    data = await request.json()
+    raw_body = await request.body()
+
+    # --- Signature validation ---
+    sig = request.headers.get("X-Spark-Signature", "")
+    if not _verify_signature(raw_body, sig):
+        return Response(content="Invalid signature", status_code=403)
 
     try:
+        import json
+        data = json.loads(raw_body)
         message_id = data["data"]["id"]
         message = webex_api.messages.get(message_id)
 
@@ -49,20 +73,20 @@ async def webhook(request: Request):
             if ADMIN_ROOM_ID:
                 webex_api.messages.create(
                     roomId=ADMIN_ROOM_ID,
-                    text=f"""🚨 Unauthorized Bot Access Attempt
-
-            Email: {sender_email}
-            Command: {message.text}
-            Room Type: {message.roomType}
-            Action: Blocked
-            """
+                    text=(
+                        f"🚨 Unauthorized Bot Access Attempt\n\n"
+                        f"Email: {sender_email}\n"
+                        f"Command: {message.text}\n"
+                        f"Room Type: {message.roomType}\n"
+                        f"Action: Blocked"
+                    )
                 )
 
             return {"status": "unauthorized"}
 
         incoming_text = message.text.strip().lower()
 
-        if incoming_text in ["/cucm health", "/health cucm"]:
+        if incoming_text in ["/cucm health", "/health cucm", "/health"]:
             webex_api.messages.create(
                 roomId=message.roomId,
                 text="⏳ CUCM health check started. DB replication can take 30–60 seconds..."

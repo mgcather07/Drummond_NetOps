@@ -33,8 +33,11 @@ COMMAND_PERMISSIONS = {
     "/cucm free-extension": "cucm.read",
     "/cucm trunk": "cucm.read",
     "/cucm route-plan": "cucm.read",
+    "/cucm route": "cucm.read",
     "/cucm did-search": "cucm.read",
+    "/cucm call-flow": "cucm.read",
     "/cucm call flow": "cucm.read",
+    "/cucm phones-eol": "cucm.read",
 
     # -----------------------------
     # CUCM health commands
@@ -50,6 +53,7 @@ COMMAND_PERMISSIONS = {
     "/ping": "network.read",
     "/network ping": "network.read",
     "/network show-version": "network.read",
+    "/show version": "network.read",
 }
 
 
@@ -88,13 +92,6 @@ def get_user(email: str) -> Optional[dict]:
 
         if not enabled:
             return None
-
-        print("========== AUTH DEBUG ==========")
-        print(f"EMAIL: {row.email}")
-        print(f"NAME: {row.name}")
-        print(f"ROLE: {row.role_name}")
-        print(f"ENABLED: {row.enabled}")
-        print("================================")
 
         return {
             "email": row.email,

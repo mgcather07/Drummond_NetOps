@@ -12,15 +12,17 @@ from app.config.settings import BOT_NAME, BOT_VERSION, BOT_ENVIRONMENT
 from app.admin.users import handle_admin_user_command
 from app.cucm.phones_eol import get_phones_eol, handle_phone_lifecycle_selection
 from app.state.pending_actions import PENDING_ACTIONS
+from app.security.auth import can_run_command, command_permission_denied_message
 
 
 def handle_command(message_text: str, sender_email: str) -> str:
 
     command = message_text.strip()
 
-    # Remove bot mention from group spaces
-    if command.lower().startswith("drummond"):
-        command = command[len("drummond"):].strip()
+    # Remove bot mention from group spaces (use BOT_NAME so it's not hardcoded)
+    bot_prefix = BOT_NAME.split()[0].lower()
+    if command.lower().startswith(bot_prefix):
+        command = command[len(bot_prefix):].strip()
 
     # Normalize command
     command_lower = command.lower()
@@ -50,6 +52,12 @@ def handle_command(message_text: str, sender_email: str) -> str:
 
     if pending_response:
         return pending_response
+
+    # -----------------------------
+    # RBAC — check before dispatch
+    # -----------------------------
+    if not can_run_command(sender_email, command):
+        return command_permission_denied_message(sender_email, command)
 
     # -----------------------------
     # HELP COMMANDS
