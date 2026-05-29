@@ -1,5 +1,8 @@
 # app/network/ping.py
+import logging
 import subprocess
+
+logger = logging.getLogger(__name__)
 
 
 def ping_host(command: str) -> str:
@@ -32,4 +35,6 @@ def ping_host(command: str) -> str:
 """
 
     except Exception as e:
-        return f"Error running ping: {str(e)}"
+        from app.utils.responses import error
+        logger.exception("Ping command failed for %s", target)
+        return error("Ping command failed", hint=f"Could not run ping to {target}.")

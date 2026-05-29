@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+import logging
+logger = logging.getLogger(__name__)
 import os
 import requests
 from requests.auth import HTTPBasicAuth
@@ -112,11 +114,9 @@ Protocol: {status_info.get("protocol", "N/A")}
 ✅ AXL + RISPort lookup successful."""
 
     except Exception as e:
-        return f"""❌ CUCM phone lookup failed.
-
-Phone Tried: {phone_name}
-CUCM Host: {CUCM_HOST}
-
-Error Type: {type(e).__name__}
-Error:
-{str(e)}"""
+        from app.utils.responses import error, translate_exception
+        logger.exception("Phone lookup failed for %s", phone_name)
+        return error(
+            translate_exception(e),
+            hint="Check that the phone name is correct and CUCM is reachable.",
+        )

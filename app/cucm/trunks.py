@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+import logging
+logger = logging.getLogger(__name__)
 import os
 import requests
 from requests.auth import HTTPBasicAuth
@@ -125,11 +127,9 @@ Protocol: {status_info.get("protocol", "N/A")}
 ✅ SIP trunk AXL + RISPort lookup successful."""
 
     except Exception as e:
-        return f"""❌ SIP trunk lookup failed.
-
-Trunk Input: {trunk_input}
-Resolved Name: {trunk_name}
-
-Error Type: {type(e).__name__}
-Error:
-{str(e)}"""
+        from app.utils.responses import error, translate_exception
+        logger.exception("Trunk lookup failed for %s", trunk_input)
+        return error(
+            translate_exception(e),
+            hint="Check the trunk alias and that CUCM is reachable.",
+        )

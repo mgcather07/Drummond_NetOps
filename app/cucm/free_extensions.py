@@ -67,11 +67,6 @@ CUCM Route Plan Patterns Checked:
 """
 
     except Exception as e:
-        return f"""❌ Free extension lookup failed.
-
-Site: {site_name} ({site_key})
-
-Error Type: {type(e).__name__}
-Error:
-{str(e)}
-"""
+        from app.utils.responses import error, translate_exception
+        logger.exception("Free extension lookup failed for site %s", site_key)
+        return error(translate_exception(e), hint="Check the site name and that CUCM is reachable.")

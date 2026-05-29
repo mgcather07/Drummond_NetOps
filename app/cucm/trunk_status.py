@@ -3,6 +3,8 @@ from requests.auth import HTTPBasicAuth
 from zeep import Client
 from zeep.transports import Transport
 from zeep.helpers import serialize_object
+import logging
+logger = logging.getLogger(__name__)
 import os
 import requests
 

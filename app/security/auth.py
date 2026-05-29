@@ -1,6 +1,9 @@
+import logging
 from typing import Optional
 
 from app.database.sql import get_sql_connection
+
+logger = logging.getLogger(__name__)
 
 ROLE_PERMISSIONS = {
     "master": ["*"],
@@ -100,10 +103,8 @@ def get_user(email: str) -> Optional[dict]:
             "enabled": enabled,
         }
 
-    except Exception as e:
-
-        print(f"AUTH SQL ERROR: {e}")
-
+    except Exception:
+        logger.exception("Auth SQL lookup failed for %s", email)
         return None
 
 

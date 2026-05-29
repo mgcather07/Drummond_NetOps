@@ -1,5 +1,7 @@
 from netmiko import ConnectHandler
 from dotenv import load_dotenv
+import logging
+logger = logging.getLogger(__name__)
 import os
 
 load_dotenv()
@@ -44,5 +46,6 @@ def show_version(command: str) -> str:
 """
 
     except Exception as e:
-
-        return f"❌ SSH connection failed:\n{str(e)}"
+        from app.utils.responses import error, translate_exception
+        logger.exception("show version failed for %s", host)
+        return error(translate_exception(e), hint=f"Check that {host} is reachable via SSH.")

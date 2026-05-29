@@ -4,6 +4,8 @@ from zeep import Client
 from zeep import Settings
 from zeep.transports import Transport
 from zeep.helpers import serialize_object
+import logging
+logger = logging.getLogger(__name__)
 import os
 import requests
 

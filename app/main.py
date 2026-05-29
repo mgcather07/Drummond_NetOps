@@ -3,12 +3,23 @@ import asyncio
 import hashlib
 import hmac
 import json
+import logging
 import os
 from functools import partial
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response
 from webexteamssdk import WebexTeamsAPI
+
+# ---------------------------------------------------------------------------
+# Logging — configure once at import time before any module logger is used
+# ---------------------------------------------------------------------------
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("netops")
 
 from app.config.settings import validate_env
 from app.security.auth import is_authorized, unauthorized_message
@@ -116,5 +127,5 @@ async def webhook(request: Request):
         return {"status": "success"}
 
     except Exception as e:
-        print("ERROR:", e)
+        logger.exception("Webhook handler error: %s", e)
         return {"status": "error"}

@@ -107,10 +107,9 @@ Role: {role}
 Enabled: True"""
 
     except Exception as e:
-        return f"""❌ Failed to add user.
-
-Email: {email}
-Error: {str(e)}"""
+        from app.utils.responses import error
+        logger.exception("Failed to add user %s", email)
+        return error("Failed to add user", hint="Check that the SQL Server is reachable.")
 
     finally:
         conn.close()

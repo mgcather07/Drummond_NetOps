@@ -1,8 +1,12 @@
+import logging
 import os
+
 import pyodbc
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 SQL_SERVER = os.getenv("SQL_SERVER")
 SQL_DATABASE = os.getenv("SQL_DATABASE")
@@ -15,40 +19,34 @@ def get_sql_connection():
 
     if SQL_AUTH_MODE == "windows":
 
-        connection_string = f"""
-        DRIVER={{ODBC Driver 18 for SQL Server}};
-        SERVER={SQL_SERVER};
-        DATABASE={SQL_DATABASE};
-        Trusted_Connection=yes;
-        Encrypt=no;
-        TrustServerCertificate=yes;
-        """
+        connection_string = (
+            f"DRIVER={{ODBC Driver 18 for SQL Server}};"
+            f"SERVER={SQL_SERVER};"
+            f"DATABASE={SQL_DATABASE};"
+            "Trusted_Connection=yes;"
+            "Encrypt=no;"
+            "TrustServerCertificate=yes;"
+        )
 
     else:
 
-        connection_string = f"""
-        DRIVER={{ODBC Driver 18 for SQL Server}};
-        SERVER={SQL_SERVER};
-        DATABASE={SQL_DATABASE};
-        UID={SQL_USERNAME};
-        PWD={SQL_PASSWORD};
-        Encrypt=no;
-        TrustServerCertificate=yes;
-        """
+        connection_string = (
+            f"DRIVER={{ODBC Driver 18 for SQL Server}};"
+            f"SERVER={SQL_SERVER};"
+            f"DATABASE={SQL_DATABASE};"
+            f"UID={SQL_USERNAME};"
+            f"PWD={SQL_PASSWORD};"
+            "Encrypt=no;"
+            "TrustServerCertificate=yes;"
+        )
 
-    print("Attempting SQL connection...\n")
+    logger.debug("SQL connection attempt to %s / %s", SQL_SERVER, SQL_DATABASE)
 
     try:
         conn = pyodbc.connect(connection_string)
-
-        print("✅ SQL CONNECTION SUCCESSFUL\n")
-
+        logger.debug("SQL connected successfully")
         return conn
 
-    except Exception as e:
-
-        print("❌ SQL CONNECTION FAILED\n")
-        print(f"ERROR TYPE: {type(e).__name__}")
-        print(f"ERROR: {e}\n")
-
+    except Exception:
+        logger.exception("SQL connection failed (server=%s db=%s)", SQL_SERVER, SQL_DATABASE)
         raise

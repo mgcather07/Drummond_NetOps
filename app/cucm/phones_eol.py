@@ -3,6 +3,8 @@ from requests.auth import HTTPBasicAuth
 from zeep import Client
 from zeep.transports import Transport
 from zeep.helpers import serialize_object
+import logging
+logger = logging.getLogger(__name__)
 import os
 import requests
 from collections import defaultdict
@@ -321,11 +323,9 @@ def get_phones_eol(command: str, sender_email: str, pending_actions: dict) -> st
         )
 
     except Exception as e:
-        return f"""❌ CUCM phones EOL report failed.
-
-Error Type: {type(e).__name__}
-Error:
-{str(e)}"""
+        from app.utils.responses import error, translate_exception
+        logger.exception("Phones EOL report failed")
+        return error(translate_exception(e), hint="Check that CUCM AXL is reachable.")
 
 def handle_phone_lifecycle_selection(
             command: str,
