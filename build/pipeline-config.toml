@@ -1,0 +1,36 @@
+# Pipeline configuration for this project.
+#
+# Read by build/deploy, the /deploy Claude skill, and /setup-deploy.
+# Edit interactively via /setup-deploy or manually here.
+
+[project]
+name = "{{PROJECT_NAME}}"
+# type: web / ios / container / library / mixed
+type = "{{PROJECT_TYPE}}"
+
+[environments]
+# Ordered list of available environments. Each must be a key in
+# .claude/environments.json. Used by the /deploy skill to populate the
+# env-prompt and by build/deploy to validate --env.
+list = ["local", "staging", "prod"]
+
+# Environments that require explicit approval before deploy.
+# (10-preflight invokes gates/approval.sh for these.)
+requires_approval = ["prod"]
+
+[tests]
+# Suite that runs by default in 30-test.sh.
+default_suite = "pre-deploy"
+
+# Override for production deploys (stricter gate). Optional.
+# prod_suite = "prod-gate"
+
+[hooks]
+# Optional scripts invoked at lifecycle points. Paths relative to repo root.
+# pre_deploy = "scripts/notify-slack-deploying.sh"
+# post_deploy = "scripts/notify-slack-deployed.sh"
+# on_failure = "scripts/notify-slack-failed.sh"
+
+[logging]
+# Append a row to build/deploy-log.md on every run.
+enabled = true

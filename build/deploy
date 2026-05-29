@@ -1,0 +1,194 @@
+#!/usr/bin/env bash
+# build/deploy — universal pipeline entry point
+#
+# Usage:
+#   ./build/deploy --env=<env> [--tag=<tag>] [--skip-tests] [--skip-gates] [--dry-run]
+#
+# --env is REQUIRED. There is no default environment. Available environments
+# are folders under build/environments/.
+#
+# Synced from claude-kit; safe to customize if you need project-specific
+# argument handling. If you customize, /sync will surface the divergence.
+
+set -euo pipefail
+
+# ─── Locate build dir relative to this script ──────────────────────────────
+BUILD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$BUILD_DIR/.." && pwd)"
+cd "$PROJECT_DIR"
+
+# ─── Defaults ──────────────────────────────────────────────────────────────
+ENV=""
+TAG=""
+SKIP_TESTS=false
+SKIP_GATES=false
+DRY_RUN=false
+
+# ─── Parse args ────────────────────────────────────────────────────────────
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --env=*)        ENV="${1#*=}" ;;
+    --env)          ENV="$2"; shift ;;
+    --tag=*)        TAG="${1#*=}" ;;
+    --tag)          TAG="$2"; shift ;;
+    --skip-tests)   SKIP_TESTS=true ;;
+    --skip-gates)   SKIP_GATES=true ;;
+    --dry-run)      DRY_RUN=true ;;
+    -h|--help)
+      grep '^#' "$0" | head -20
+      exit 0
+      ;;
+    *)
+      echo "ERROR: unknown arg: $1"
+      echo "Run with --help for usage."
+      exit 2
+      ;;
+  esac
+  shift
+done
+
+# ─── Require --env ─────────────────────────────────────────────────────────
+if [[ -z "$ENV" ]]; then
+  echo "ERROR: --env=<environment> is required."
+  echo ""
+  echo "Available environments:"
+  if [[ -d "$BUILD_DIR/environments" ]]; then
+    for d in "$BUILD_DIR"/environments/*/; do
+      [[ -d "$d" ]] || continue
+      echo "  - $(basename "$d")"
+    done
+  fi
+  exit 2
+fi
+
+# ─── Validate environment exists ───────────────────────────────────────────
+ENV_DIR="$BUILD_DIR/environments/$ENV"
+if [[ ! -d "$ENV_DIR" ]]; then
+  echo "ERROR: environment '$ENV' not found at $ENV_DIR"
+  echo ""
+  echo "Available environments:"
+  for d in "$BUILD_DIR"/environments/*/; do
+    [[ -d "$d" ]] || continue
+    echo "  - $(basename "$d")"
+  done
+  exit 2
+fi
+
+# ─── Source env vars ───────────────────────────────────────────────────────
+if [[ -f "$ENV_DIR/env.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$ENV_DIR/env.sh"
+fi
+
+# Export pipeline-wide vars accessible to stages and deploy scripts
+export ENVIRONMENT="$ENV"
+
+# The environment skill — present when the project set up the
+# environment registry; absent otherwise (the pipeline still works).
+ENV_SH="$PROJECT_DIR/.claude/skills/environment/environment.sh"
+
+# DEPLOY_TAG: an explicit --tag wins; else the canonical
+# v<semver>-<sha>-<env> string from the environment registry; else
+# git describe (for projects without the environment skill).
+DEPLOY_TAG=""
+if [[ -n "$TAG" ]]; then
+  DEPLOY_TAG="$TAG"
+elif [[ -f "$ENV_SH" ]]; then
+  DEPLOY_TAG="$(bash "$ENV_SH" version "$ENV" 2>/dev/null || true)"
+fi
+DEPLOY_TAG="${DEPLOY_TAG:-$(git describe --tags --always 2>/dev/null || echo 'untagged')}"
+export DEPLOY_TAG
+
+# PUBLISH_TO / DEPLOY_TO: the cloud-stamp targets the registry declares
+# for this environment (empty when unset, or when there is no registry).
+# Stages and environments/<env>/deploy.sh route on these.
+export PUBLISH_TO=""
+export DEPLOY_TO=""
+if [[ -f "$ENV_SH" ]]; then
+  PUBLISH_TO="$(bash "$ENV_SH" get "$ENV" publish_to 2>/dev/null || true)"
+  DEPLOY_TO="$(bash "$ENV_SH" get "$ENV" deploy_to 2>/dev/null || true)"
+fi
+
+export DEPLOY_USER="$(whoami)"
+export DEPLOY_TIMESTAMP="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
+# ─── Banner ────────────────────────────────────────────────────────────────
+echo "════════════════════════════════════════════════════════════"
+echo "  Deploy → $ENV"
+echo "  Tag:  $DEPLOY_TAG"
+[[ -n "$PUBLISH_TO" ]] && echo "  Publish → $PUBLISH_TO"
+[[ -n "$DEPLOY_TO" ]]  && echo "  Target  → $DEPLOY_TO"
+echo "  User: $DEPLOY_USER"
+echo "  Time: $DEPLOY_TIMESTAMP"
+$DRY_RUN  && echo "  Mode: DRY RUN (no execution)"
+$SKIP_TESTS && echo "  Tests: SKIPPED"
+$SKIP_GATES && echo "  Gates: SKIPPED"
+echo "════════════════════════════════════════════════════════════"
+
+# ─── Run stages in numeric order ───────────────────────────────────────────
+START=$(date +%s)
+RESULT="success"
+ERROR_STAGE=""
+
+# Collect stages by name to run in sorted order
+STAGES=()
+for s in "$BUILD_DIR"/stages/*.sh; do
+  [[ -f "$s" ]] || continue
+  STAGES+=("$s")
+done
+IFS=$'\n' STAGES=($(sort <<<"${STAGES[*]}")); unset IFS
+
+for stage in "${STAGES[@]}"; do
+  STAGE_NAME=$(basename "$stage" .sh)
+
+  # --skip-tests skips any stage whose name contains "test"
+  if [[ "$SKIP_TESTS" == "true" && "$STAGE_NAME" == *test* ]]; then
+    echo "▷ $STAGE_NAME (skipped: --skip-tests)"
+    continue
+  fi
+
+  echo ""
+  echo "▶ Stage: $STAGE_NAME"
+  echo "───────────────────────────────────────────────────────────"
+
+  if [[ "$DRY_RUN" == "true" ]]; then
+    echo "  (dry-run: not executing)"
+    continue
+  fi
+
+  if ! bash "$stage" "$ENV"; then
+    RESULT="failed"
+    ERROR_STAGE="$STAGE_NAME"
+    echo ""
+    echo "✗ Stage failed: $STAGE_NAME"
+    break
+  fi
+done
+
+END=$(date +%s)
+DURATION=$((END - START))
+
+# ─── Log result ────────────────────────────────────────────────────────────
+LOG="$BUILD_DIR/deploy-log.md"
+if [[ -f "$LOG" ]]; then
+  STATUS_MARK="✓"
+  NOTES=""
+  if [[ "$RESULT" == "failed" ]]; then
+    STATUS_MARK="✗"
+    NOTES="failed at $ERROR_STAGE"
+  fi
+  if [[ "$DRY_RUN" == "true" ]]; then
+    NOTES="${NOTES:+$NOTES; }dry-run"
+  fi
+  echo "| $DEPLOY_TIMESTAMP | $ENV | $DEPLOY_USER | $DEPLOY_TAG | $STATUS_MARK | ${DURATION}s | $NOTES |" >> "$LOG"
+fi
+
+# ─── Exit code ─────────────────────────────────────────────────────────────
+echo ""
+if [[ "$RESULT" == "success" ]]; then
+  echo "✓ Deploy complete: $ENV (${DURATION}s)"
+  exit 0
+else
+  echo "✗ Deploy failed at stage: $ERROR_STAGE"
+  exit 1
+fi

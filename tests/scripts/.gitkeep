@@ -1,0 +1,21 @@
+# tests/scripts/ — fallback location for bash/python test scripts
+#
+# Use this folder when your project has no native test framework (pure
+# container service, infra repo, glue code). Each script:
+#
+#   1. Exits 0 on pass, non-zero on fail
+#   2. Is referenced by a stamp under tests/stamps/
+#   3. Lives self-contained (no shared state with other tests)
+#
+# Example stamp pointing here:
+#
+#   ---
+#   name: api-health-check
+#   kind: test
+#   test_kind: integration
+#   language: bash
+#   location: tests/scripts/api-health-check.sh
+#   run_command: tests/scripts/api-health-check.sh
+#   ---
+#
+# See test-rules.md for the full stamp model.
