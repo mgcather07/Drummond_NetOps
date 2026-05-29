@@ -23,7 +23,13 @@ def get_trunk_status(trunk_name: str) -> dict:
 
         transport = Transport(session=session, timeout=20)
 
-        wsdl = f"https://{CUCM_HOST}:8443/realtimeservice2/services/RISService70?wsdl"
+        # Prefer locally cached WSDL; fall back to live fetch
+        _local_wsdl = "schema/15.0/RISService70.wsdl"
+        wsdl = (
+            _local_wsdl
+            if os.path.exists(_local_wsdl)
+            else f"https://{CUCM_HOST}:8443/realtimeservice2/services/RISService70?wsdl"
+        )
 
         client = Client(
             wsdl=wsdl,

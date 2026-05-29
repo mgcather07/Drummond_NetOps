@@ -199,10 +199,11 @@ def build_phone_eol_summary(grouped: dict, sender_email: str, pending_actions: d
     )
 
 
-    pending_actions[sender_email] = {
+    from app.state.pending_actions import set_pending
+    set_pending(sender_email, {
         "type": "phone_lifecycle_model_select",
         "models": models,
-    }
+    })
 
     lines = []
     current_status = None
@@ -331,7 +332,8 @@ def handle_phone_lifecycle_selection(
             sender_email: str,
             pending_actions: dict
     ) -> Optional[str]:
-    pending = pending_actions.get(sender_email)
+    from app.state.pending_actions import get_pending, clear_pending
+    pending = get_pending(sender_email)
 
     if not pending:
         return None
@@ -352,6 +354,6 @@ def handle_phone_lifecycle_selection(
 
     selected_model = models[selection - 1]
 
-    pending_actions.pop(sender_email, None)
+    clear_pending(sender_email)
 
     return build_phone_eol_model_detail(selected_model)

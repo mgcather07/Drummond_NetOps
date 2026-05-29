@@ -1,18 +1,28 @@
 # app/main.py
+import asyncio
 import hashlib
 import hmac
+import json
 import os
+from functools import partial
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response
 from webexteamssdk import WebexTeamsAPI
 
+from app.config.settings import validate_env
 from app.security.auth import is_authorized, unauthorized_message
 from app.webex.command_router import handle_command
 
 load_dotenv()
 
 app = FastAPI()
+
+
+@app.on_event("startup")
+def on_startup():
+    validate_env()
+
 
 BOT_TOKEN = os.getenv("WEBEX_BOT_TOKEN")
 ADMIN_ROOM_ID = os.getenv("BOT_ADMIN_ROOM_ID")
@@ -52,10 +62,10 @@ async def webhook(request: Request):
         return Response(content="Invalid signature", status_code=403)
 
     try:
-        import json
         data = json.loads(raw_body)
         message_id = data["data"]["id"]
-        message = webex_api.messages.get(message_id)
+        loop = asyncio.get_running_loop()
+        message = await loop.run_in_executor(None, webex_api.messages.get, message_id)
 
         if message.personEmail.endswith("@webex.bot"):
             return {"status": "ignored bot message"}
@@ -92,14 +102,15 @@ async def webhook(request: Request):
                 text="⏳ CUCM health check started. DB replication can take 30–60 seconds..."
             )
 
-        reply = handle_command(
-            message_text=message.text,
-            sender_email=sender_email
+        # Run blocking handler in thread pool so the async loop stays free
+        reply = await loop.run_in_executor(
+            None,
+            partial(handle_command, message_text=message.text, sender_email=sender_email)
         )
 
-        webex_api.messages.create(
-            roomId=message.roomId,
-            text=reply
+        await loop.run_in_executor(
+            None,
+            partial(webex_api.messages.create, roomId=message.roomId, text=reply)
         )
 
         return {"status": "success"}
