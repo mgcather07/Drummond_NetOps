@@ -3,6 +3,8 @@ from requests.auth import HTTPBasicAuth
 from zeep import Client
 from zeep.transports import Transport
 from zeep.helpers import serialize_object
+import logging
+logger = logging.getLogger(__name__)
 import os
 import re
 import requests
@@ -156,11 +158,6 @@ Matches Found: {len(matches)}
 ⚠️ If a pattern exists here, it should not be considered free for assignment."""
 
     except Exception as e:
-        return f"""❌ CUCM route plan lookup failed.
-
-Pattern: {search_value}
-CUCM Host: {CUCM_HOST}
-
-Error Type: {type(e).__name__}
-Error:
-{str(e)}"""
+        from app.utils.responses import error, translate_exception
+        logger.exception("Route plan lookup failed for %s", search_value)
+        return error(translate_exception(e), hint="Check the pattern and that CUCM is reachable.")

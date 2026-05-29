@@ -1,6 +1,9 @@
+import logging
 from typing import Optional
 
 from app.database.sql import get_sql_connection
+
+logger = logging.getLogger(__name__)
 
 ROLE_PERMISSIONS = {
     "master": ["*"],
@@ -8,6 +11,8 @@ ROLE_PERMISSIONS = {
         "cucm.read",
         "cucm.health",
         "network.read",
+        "palo.read",
+        "vsphere.read",
     ],
     "user": [
         "cucm.read",
@@ -33,8 +38,11 @@ COMMAND_PERMISSIONS = {
     "/cucm free-extension": "cucm.read",
     "/cucm trunk": "cucm.read",
     "/cucm route-plan": "cucm.read",
+    "/cucm route": "cucm.read",
     "/cucm did-search": "cucm.read",
+    "/cucm call-flow": "cucm.read",
     "/cucm call flow": "cucm.read",
+    "/cucm phones-eol": "cucm.read",
 
     # -----------------------------
     # CUCM health commands
@@ -50,6 +58,43 @@ COMMAND_PERMISSIONS = {
     "/ping": "network.read",
     "/network ping": "network.read",
     "/network show-version": "network.read",
+    "/show version": "network.read",
+    "/show interface": "network.read",
+    "/show ip route": "network.read",
+    "/traceroute": "network.read",
+    "/net devices": "network.read",
+    "/net arp": "network.read",
+    "/net mac": "network.read",
+    "/net neighbors": "network.read",
+    "/net vlan": "network.read",
+    "/net port": "network.read",
+    "/net stats": "network.read",
+
+    # -----------------------------
+    # vSphere read-only commands
+    # -----------------------------
+    "/vsphere vm": "vsphere.read",
+    "/vsphere list": "vsphere.read",
+    "/vsphere hosts": "vsphere.read",
+    "/vsphere cluster": "vsphere.read",
+    "/vsphere datastores": "vsphere.read",
+    "/vsphere net": "vsphere.read",
+    "/vsphere portgroup": "vsphere.read",
+    "/vsphere snapshots": "vsphere.read",
+    "/vsphere power": "vsphere.write",
+
+    # -----------------------------
+    # Palo Alto read-only commands
+    # -----------------------------
+    "/palo policy": "palo.read",
+    "/palo nat": "palo.read",
+    "/palo health": "palo.read",
+    "/palo ha": "palo.read",
+    "/palo interfaces": "palo.read",
+    "/palo zones": "palo.read",
+    "/palo route": "palo.read",
+    "/palo search": "palo.read",
+    "/palo address": "palo.read",
 }
 
 
@@ -89,13 +134,6 @@ def get_user(email: str) -> Optional[dict]:
         if not enabled:
             return None
 
-        print("========== AUTH DEBUG ==========")
-        print(f"EMAIL: {row.email}")
-        print(f"NAME: {row.name}")
-        print(f"ROLE: {row.role_name}")
-        print(f"ENABLED: {row.enabled}")
-        print("================================")
-
         return {
             "email": row.email,
             "name": row.name,
@@ -103,10 +141,8 @@ def get_user(email: str) -> Optional[dict]:
             "enabled": enabled,
         }
 
-    except Exception as e:
-
-        print(f"AUTH SQL ERROR: {e}")
-
+    except Exception:
+        logger.exception("Auth SQL lookup failed for %s", email)
         return None
 
 

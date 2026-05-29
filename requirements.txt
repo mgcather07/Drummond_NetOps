@@ -47,3 +47,4 @@ urllib3==2.6.3
 uvicorn==0.39.0
 webexteamssdk==1.7
 zeep==4.3.2
+pyVmomi>=8.0.3.0  # Requires Python 3.10+

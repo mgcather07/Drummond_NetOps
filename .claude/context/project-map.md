@@ -1,0 +1,78 @@
+# Project map — Drummond_NetOps
+
+> **For Claude sessions.** Tight context map. The deep reference docs live under `docs/wrangle/`; this file is the index Claude reads on session start to land cold with project context.
+
+**Audited at.** `e00fc16` on 2026-05-27
+
+---
+
+## What this project is
+
+A Webex bot that gives Drummond's IT/network team a chat interface for Cisco CUCM and network operations. Authorized users query phone configs, SIP trunks, dial plans, call flow, DB replication health, and network devices — all from Webex. It's a FastAPI service receiving Webex webhooks at `POST /webhook`, authenticating senders against a SQL Server user table, then routing to CUCM AXL SOAP, RISPort SOAP, SSH, or pyodbc depending on the command.
+
+## Tech stack
+
+- **Python 3.9** — runtime ([docs](https://docs.python.org/3.9/))
+- **FastAPI 0.128 + uvicorn 0.39** — webhook server ([FastAPI docs](https://fastapi.tiangolo.com/))
+- **Webex Teams SDK 1.7** — bot messaging ([docs](https://webexteamssdk.readthedocs.io/))
+- **Zeep 4.3.2** — SOAP client for CUCM AXL + RISPort ([docs](https://docs.python-zeep.org/))
+- **Netmiko 4.6** — SSH to CUCM CLI + Cisco IOS devices ([docs](https://ktbyers.github.io/netmiko/))
+- **pyodbc 5.3** — SQL Server for `dbo.users` ([docs](https://github.com/mkleehammer/pyodbc/wiki))
+- **python-dotenv 1.2** — env var loading from `.env`
+
+*(Full inventory: [`docs/wrangle/13-dependencies.md`](../../docs/wrangle/13-dependencies.md))*
+
+## Where execution starts
+
+`app/main.py:1` — FastAPI app created, `.env` loaded, `WebexTeamsAPI` client initialized. If `WEBEX_BOT_TOKEN` is missing the process crashes at boot. Routes: `GET /` (health check) and `POST /webhook` (main handler). The webhook handler calls `is_authorized()` (live SQL query), then `handle_command()`, then sends the reply via Webex API.
+
+## Key boundaries
+
+- **Auth gate** at `app/main.py:36-60` — SQL lookup per request; any enabled user passes
+- **Command router** at `app/webex/command_router.py` — `if command_lower.startswith(...)` dispatch; no RBAC enforcement
+- **CUCM handlers** under `app/cucm/` — each file owns one command; all use Zeep + AXL or pyodbc SQL
+- **Static data** under `app/data/` — sites, trunks, DID blocks, phone models, EOL catalog; no DB backing
+- **State** at `app/state/pending_actions.py` — in-memory dict for multi-step flows (phones-eol model selection)
+
+## Data model in 5 lines
+
+- **`dbo.users`** — SQL Server table: email, name, role_name (master/admin/user), enabled
+- **CUCM phones** — queried live via AXL `getPhone` + RISPort `selectCmDeviceExt`; not stored
+- **CUCM trunks** — queried live via AXL `getSipTrunk` + RISPort; not stored
+- **CUCM dial plan** — queried live via AXL `executeSQLQuery` on `numplan`/`routepartition` tables
+- **Static reference** — sites (12), trunks (2), DID blocks, CUCM nodes (5), phone EOL catalog (~25 models) — all in `app/data/*.py`
+
+## Auth
+
+`app/security/auth.py:113-114` — `is_authorized(email)` runs a SQL query against `dbo.users`. Three roles (`master`, `admin`, `user`) are defined with permission sets, but **RBAC is not enforced in the command router** — any enabled user can run any command. Only `/admin` commands enforce the `master` role via `require_master()`.
+
+## Sharp edges
+
+- **RBAC not enforced** — `can_run_command()` is defined in `auth.py` but never called from `command_router.py`. All authenticated users have full access.
+- **`app/data/authorized_users.py` is dead code** — looks like the access control list, imports nothing, is imported nowhere. Do not trust it as the live user list.
+- **No webhook signature validation** — `POST /webhook` accepts any correctly-shaped POST; no Webex HMAC check.
+- **RISPort WSDL fetched live per call** — `risport.py:27` fetches the WSDL from CUCM on every phone/trunk status lookup; if CUCM is slow, this adds latency before the actual query.
+- **Auth debug PII always logged** — `auth.py:93-98` prints email/name/role to stdout on every successful auth check.
+
+## Where to dig
+
+| Need | File |
+|---|---|
+| Architecture deep-dive | [`docs/wrangle/03-architecture.md`](../../docs/wrangle/03-architecture.md) |
+| Data model | [`docs/wrangle/04-data-model.md`](../../docs/wrangle/04-data-model.md) |
+| Startup flow | [`docs/wrangle/02-startup-flow.md`](../../docs/wrangle/02-startup-flow.md) |
+| Auth | [`docs/wrangle/08-auth.md`](../../docs/wrangle/08-auth.md) |
+| Integrations (AXL, RISPort, SSH) | [`docs/wrangle/09-integrations.md`](../../docs/wrangle/09-integrations.md) |
+| All risks with file:line citations | [`docs/wrangle/12-smells-and-risks.md`](../../docs/wrangle/12-smells-and-risks.md) |
+| Build & deploy | [`docs/wrangle/11-build-deploy.md`](../../docs/wrangle/11-build-deploy.md) |
+| Open questions | [`docs/wrangle/questions.md`](../../docs/wrangle/questions.md) |
+
+## Past audits & decisions
+
+- Recent audits: see `docs/audits/`
+- Architectural decisions: see `docs/decisions/`
+- Postmortems: see `docs/postmortems/`
+
+---
+
+*Generated by `/wrangle` on 2026-05-27. Re-run wrangle when the project shape shifts; this file is regenerable. Past versions live in git history.*

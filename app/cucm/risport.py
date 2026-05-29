@@ -3,6 +3,8 @@ from requests.auth import HTTPBasicAuth
 from zeep import Client
 from zeep.transports import Transport
 from zeep.helpers import serialize_object
+import logging
+logger = logging.getLogger(__name__)
 import os
 import requests
 from app.data.model_lookup import MODEL_LOOKUP
@@ -27,7 +29,13 @@ def get_phone_status(phone_name: str) -> dict:
 
         transport = Transport(session=session, timeout=15)
 
-        wsdl = f"https://{CUCM_HOST}:8443/realtimeservice2/services/RISService70?wsdl"
+        # Prefer locally cached WSDL; fall back to live fetch
+        _local_wsdl = "schema/15.0/RISService70.wsdl"
+        wsdl = (
+            _local_wsdl
+            if os.path.exists(_local_wsdl)
+            else f"https://{CUCM_HOST}:8443/realtimeservice2/services/RISService70?wsdl"
+        )
 
         client = Client(
             wsdl=wsdl,

@@ -1,0 +1,24 @@
+{
+  "description": "Environment registry — the single source of truth for this project's environments. Every environment name used by runtime stamps (env.environments), cloud stamps (environments), env-var stamps (environments), and the deploy pipeline must be a key under `environments` here. Read by .claude/skills/environment/environment.sh. See .claude/environment-rules.md.",
+  "default": "local",
+  "environments": {
+    "local": {
+      "description": "Local development on your own machine.",
+      "env_file": ".env",
+      "publish_to": null,
+      "deploy_to": null
+    },
+    "staging": {
+      "description": "Shared pre-production environment.",
+      "env_file": ".env.staging",
+      "publish_to": null,
+      "deploy_to": null
+    },
+    "prod": {
+      "description": "Production.",
+      "env_file": ".env.production",
+      "publish_to": null,
+      "deploy_to": null
+    }
+  }
+}

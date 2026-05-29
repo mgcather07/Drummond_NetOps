@@ -48,7 +48,8 @@ def get_cucm_health(command: str) -> str:
         axl_status = "✅ Responding"
 
     except Exception as e:
-        axl_status = f"❌ Failed - {type(e).__name__}"
+        logger.exception("AXL health check failed")
+        axl_status = "❌ Failed — could not reach CUCM AXL"
 
     #
     # Database Replication Health
@@ -65,7 +66,8 @@ def get_cucm_health(command: str) -> str:
         )
 
     except Exception as e:
-        dbreplication_status = f"❌ Failed - {type(e).__name__}"
+        logger.exception("DB replication health check failed")
+        dbreplication_status = "❌ Failed — SSH or DB error"
         dbreplication_summary = f"Database Replication: {dbreplication_status}"
 
     #

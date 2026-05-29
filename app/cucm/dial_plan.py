@@ -3,6 +3,8 @@ from requests.auth import HTTPBasicAuth
 from zeep import Client
 from zeep.transports import Transport
 from zeep.helpers import serialize_object
+import logging
+logger = logging.getLogger(__name__)
 import os
 import re
 import requests
@@ -232,13 +234,9 @@ All Matches:
 ✅ CUCM dial plan analysis completed."""
 
     except Exception as e:
-        return f"""❌ Dial plan analysis failed.
-
-Dialed Number: {dialed_number}
-Site Context: {site_input or "Global Route Plan"}
-
-Error Type: {type(e).__name__}
-Error: {str(e)}"""
+        from app.utils.responses import error, translate_exception
+        logger.exception("Dial plan analysis failed for %s", dialed_number)
+        return error(translate_exception(e), hint="Check the dialed number and that CUCM is reachable.")
 
 
 def extract_likely_route_from_text(dial_plan_result: str) -> dict:

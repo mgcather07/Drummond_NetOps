@@ -3,6 +3,8 @@ from requests.auth import HTTPBasicAuth
 from zeep import Client
 from zeep.transports import Transport
 from zeep.helpers import serialize_object
+import logging
+logger = logging.getLogger(__name__)
 import os
 import requests
 from collections import defaultdict
@@ -199,10 +201,11 @@ def build_phone_eol_summary(grouped: dict, sender_email: str, pending_actions: d
     )
 
 
-    pending_actions[sender_email] = {
+    from app.state.pending_actions import set_pending
+    set_pending(sender_email, {
         "type": "phone_lifecycle_model_select",
         "models": models,
-    }
+    })
 
     lines = []
     current_status = None
@@ -320,18 +323,17 @@ def get_phones_eol(command: str, sender_email: str, pending_actions: dict) -> st
         )
 
     except Exception as e:
-        return f"""❌ CUCM phones EOL report failed.
-
-Error Type: {type(e).__name__}
-Error:
-{str(e)}"""
+        from app.utils.responses import error, translate_exception
+        logger.exception("Phones EOL report failed")
+        return error(translate_exception(e), hint="Check that CUCM AXL is reachable.")
 
 def handle_phone_lifecycle_selection(
             command: str,
             sender_email: str,
             pending_actions: dict
     ) -> Optional[str]:
-    pending = pending_actions.get(sender_email)
+    from app.state.pending_actions import get_pending, clear_pending
+    pending = get_pending(sender_email)
 
     if not pending:
         return None
@@ -352,6 +354,6 @@ def handle_phone_lifecycle_selection(
 
     selected_model = models[selection - 1]
 
-    pending_actions.pop(sender_email, None)
+    clear_pending(sender_email)
 
     return build_phone_eol_model_detail(selected_model)
